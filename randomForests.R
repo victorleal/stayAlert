@@ -2,6 +2,7 @@ library(dplyr)
 library(MASS)
 library(caret)
 library(randomForest)
+library(ROCR)
 
 # LENDO DO ARQUIVO
 fordTrain <- read.csv("fordTrain.csv",header=T)
@@ -52,3 +53,12 @@ predicted_rf <- predict(model_rf, newdata = TEST)
 #sum(diag(table(predicted=predicted_lda$class,actual=TEST$IsAlert)))/length(VALIDATION_SET)
 print(paste("Random Forests accuracy:",sum(diag(table(predicted_rf,TEST$IsAlert)/length(TEST$IsAlert)))))
 #}
+
+# PLOTA ROC E CALCULA AUC
+pred <- prediction(as.numeric(predicted_rf), TEST$IsAlert)
+perf <- performance(pred, measure = 'tpr', x.measure = 'fpr')
+plot(perf, col=rainbow(10))
+segments(0,0,1,1)
+
+auc <- performance(pred, 'auc')
+as.numeric(auc@y.values)
