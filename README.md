@@ -6,6 +6,6 @@ Classification problem regarding physiological, environmental and vehicle data, 
 
 # Accuracies
 
-Logistic Regression: ?%
-LDA: 71% (without normalization)
+Logistic Regression: ?%  
+LDA: 71% (without normalization)  
 Random Fucking Forests: 98% (é a floresta de nárnia não é possíver)
