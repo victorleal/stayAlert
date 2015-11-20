@@ -1,3 +1,5 @@
+"---------------------------- KAGGLE TEST -----------------------------\n"
+
 # TESTANDO COM O CONJUNTO DE TESTES ESPECIFICADO PELO KAGGLE
 TEST <- read.csv("fordTest.csv")
 TEST$P1 <- NULL
