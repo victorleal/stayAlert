@@ -1,7 +1,7 @@
 cat("--------------------------- RANDOM FORESTS ---------------------------",sep="\n\n")
 
 library(randomForest)
-model_rf <- randomForest(IsAlert ~ ., data = TRAIN, ntree = 20)
+model_rf <- randomForest(IsAlert ~ ., data = TRAIN, ntree = 10)
 predicted_rf <- predict(model_rf, newdata = TEST)
 tbl <- table(pred = predicted_rf,actual = TEST$IsAlert)
 print(tbl)
