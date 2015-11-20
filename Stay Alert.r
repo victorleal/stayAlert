@@ -19,7 +19,7 @@ fordTrain <- arrange(fordTrain,TrialID, ObsNum)
 sink("log.txt", append = T)
 cat("----------------------- START OF EXPERIMENTS -----------------------")
 cat("\n\n")
-print(tbl)
+
 Y <- factor(fordTrain$IsAlert)
 
 # Descartando variaveis desnecessárias
