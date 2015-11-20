@@ -17,6 +17,9 @@ fordTrain <- arrange(fordTrain,TrialID, ObsNum)
 
 # REDIRECIONANDO A SAIDA PARA LOG AUTOMATICO
 sink("log.txt", append = T)
+cat("\n\n\n")
+format(Sys.time(), "%a, %d %b %Y - %X")
+cat("\n\n")
 cat("----------------------- START OF EXPERIMENTS -----------------------")
 cat("\n\n")
 
