@@ -6,7 +6,7 @@ CLEANUP_P <- FALSE
 BALANCE <- TRUE
 BAGGING <- TRUE
 NORMALIZE <- TRUE
-NORM_BY <- "COL" # ROW | COL
+NORM_BY <- "ROW" # ROW | COL
 MESSAGE <- ""
 # ===============================================================
 
