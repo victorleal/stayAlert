@@ -6,6 +6,10 @@ fordTrain <- read.csv("fordTrain.csv",header=T)
 fordTrain <- arrange(fordTrain,TrialID, ObsNum)
 #write.csv(fordTrain,"fordTrain.csv")
 
+# REDIRECIONANDO A SAIDA PARA LOG AUTOMATICO
+sink("log.txt")
+"----------------------- START OF EXPERIMENTS -----------------------"
+
 Y <- factor(fordTrain$IsAlert)
 
 # Descartando variaveis desnecessárias
@@ -26,6 +30,9 @@ fordTrain$V7 <- NULL
 fordTrain$V9 <- NULL
 fordTrain$IsAlert <- NULL
 
+CONFIGURATION <- "NORMALIZATION: no / BOOTSTRAP: Yes / P-VARS: No"
+CONFIGURATION
+
 # TREINAMENTO
 SPLIT <- as.integer(nrow(fordTrain)/2)
 # inverso das probabilidades originais do dataset
@@ -38,7 +45,7 @@ TRAIN <- fordTrain[BOOTSTRAP,]
 # NORMALIZACAO DOS DADOS
 MEANS <- apply(TRAIN,2,mean)
 SD <- apply(TRAIN,2,sd)
-TRAIN <- (TRAIN - MEANS)/SD
+#TRAIN <- (TRAIN - MEANS)/SD
 #TRAIN <- apply(TRAIN,1,function(x){(x-mean(x))/sd(x)})
 TRAIN$IsAlert <- Y[BOOTSTRAP]
 
@@ -46,9 +53,13 @@ TRAIN$IsAlert <- Y[BOOTSTRAP]
 VALIDATION_SET <- setdiff(c(SPLIT:nrow(fordTrain)),BOOTSTRAP)
 VALIDATION_SET <- sample(VALIDATION_SET, size = SPLIT, replace = F)
 TEST <- fordTrain[VALIDATION_SET,]
-TEST <- (TEST - MEANS)/SD
+#TEST <- (TEST - MEANS)/SD
 TEST$IsAlert <- Y[VALIDATION_SET]
 
 source("LDA.r")
 source("RandomForests.r")
-#source("LogR.r")
+source("LogR.r")
+
+"------------------------ END OF EXPERIMENTS ------------------------"
+
+sink(NULL)
