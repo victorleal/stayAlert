@@ -109,7 +109,7 @@ for(i in 1:2){
   if(i==1) cat(MESSAGE,sep="\n")
 
   source("LDA.r")
-  source("RandomForests.r")
+  source("RF.r")
   source("LogR.r")
 }
 cat("------------------------ END OF EXPERIMENTS ------------------------",sep="\n")
