@@ -50,11 +50,11 @@ SPLIT <- as.integer(nrow(fordTrain)/2)
 
 for(i in 1:2){
   if(i==1){
-    cat(MESSAGE,"TRAIN A-TEST B",sep="\n")
+    cat("TRAIN A-TEST B",sep="\n")
     TRAIN_RANGE <- c(1:SPLIT)
     TEST_RANGE <- c(SPLIT:nrow(fordTrain))
   }else{
-    cat(MESSAGE,"TRAIN B-TEST A",sep="\n")
+    cat("TRAIN B-TEST A",sep="\n")
     TEST_RANGE <- c(1:SPLIT)
     TRAIN_RANGE <- c(SPLIT:nrow(fordTrain))
   }
