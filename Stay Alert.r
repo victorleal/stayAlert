@@ -6,23 +6,25 @@ library(ROCR)
 
 # SETUP =========================================================
 READ_CSV <- TRUE
+CV <- TRUE
 
 CLEANUP_P <- TRUE
+FEATURES <- NA#c("V11","V1","E10","E6","TrialID","ObsNum","IsAlert")
 BALANCE <- TRUE
 BAGGING <- TRUE
 TAYLOR <- FALSE
 
-LEADS <- 0
-JUMP <- 50
-REDUCE_BY <- 1
+LEADS <- 50
+JUMP <- 1
+REDUCE_BY <- 50
 
-NORMALIZE <- TRUE
+NORMALIZE <- FALSE
 NORM_BY <- "COL" # ROW | COL
 MESSAGE <- ""
 # ===============================================================
 
 # REDIRECIONANDO A SAIDA PARA LOG AUTOMATICO
-sink("log.txt", append = T)
+#sink("log.txt", append = T)
 cat(format(Sys.time(), "%a, %d %b %Y - %X"))
 cat("\n\n")
 cat("----------------------- START OF EXPERIMENTS -----------------------")
@@ -40,13 +42,16 @@ if(READ_CSV){
 }
 
 Y <- factor(fordTrain$IsAlert)
+meta <- data.frame(IsAlert = fordTrain$IsAlert,TrialID = fordTrain$TrialID, ObsNum = fordTrain$ObsNum)
 
 # Descartando variaveis desnecessárias
 fordTrain$X <- NULL
 fordTrain$V7 <- NULL
 fordTrain$V9 <- NULL
 fordTrain$P8 <- NULL
-
+fordTrain$IsAlert <- NULL
+fordTrain$TrialID <- NULL
+fordTrain$ObsNum <- NULL
 
 # No desafio, a orientação era para evitar o uso de variáveis Px
 if(CLEANUP_P){
@@ -57,12 +62,23 @@ if(CLEANUP_P){
   MESSAGE <- "P-VARS: Yes"
 }
 
+if(!is.na(FEATURES)){
+  MESSAGE <- paste(MESSAGE,"FEATURE SELECTION: Yes",sep=" / ")
+  fordTrain <- fordTrain[,intersect(FEATURES,colnames(fordTrain))]
+}else{
+  MESSAGE <- paste(MESSAGE,"FEATURE SELECTION: No",sep=" / ")
+}
+
 # TAYLOR EXPANSIONS ================================================
 if(TAYLOR){
   MESSAGE <- c(MESSAGE,"TAYLOR: Yes",sep=" / ")
-  for(i in 1:ncol(fordTrain)){
-    for(j in i:ncol(fordTrain)){
+  cols <- ncol(fordTrain)
+  last <- cols
+  for(i in 1:cols){
+    for(j in i:cols){
       fordTrain <- cbind(fordTrain,fordTrain[,i]*fordTrain[,j])
+      last <- last + 1
+      colnames(fordTrain)[last] <- paste(colnames(fordTrain)[i],colnames(fordTrain)[j],sep="x")
     }
   }
 }else{
@@ -71,7 +87,9 @@ if(TAYLOR){
 
 # CRIANDO VETORES DE TIME SERIES ====================================
 if(LEADS > 0){
+  fordTrain <- cbind(fordTrain,meta)
   tmp_names <- colnames(fordTrain)
+
   for(i in 1:LEADS){
     MESSAGE <- paste(MESSAGE, paste("LEADS:",LEADS),sep=" / ")
     MESSAGE <- paste(MESSAGE, paste("JUMP:",JUMP),sep=" / ")
@@ -82,19 +100,23 @@ if(LEADS > 0){
   rm(tmp_df)
   a <- colnames(fordTrain)
   fordTrain <- fordTrain[which(fordTrain$TrialID == fordTrain$TrialID_1),]
+  remove <- grep(pattern = "(Trial.+)|(Obs.+)|(IsAlert.+)",x = colnames(fordTrain),ignore.case = T)
+  fordTrain <- fordTrain[,-remove]
+  # Removendo NA's
+  fordTrain <- fordTrain[apply(fordTrain,1,function(x){if(is.na(sum(x))){FALSE}else{TRUE}}),]
 }
 
-
-remove <- grep(pattern = "(Trial.+)|(Obs.+)|(IsAlert.+)",x = colnames(fordTrain),ignore.case = T)
-fordTrain <- fordTrain[,-remove]
 save(fordTrain,file = "fordTrain_p.Rdata")
 
 # TREINAMENTO
 SPLIT <- as.integer(nrow(fordTrain)/2)
 
 for(i in 1:2){
-  load("fordTrain_p.Rdata")
+  if(!CV && i==2) break
 
+  load("fordTrain_p.Rdata")
+  fordTrain$E5xE5 <- NULL
+  fordTrain$E11xV8 <- NULL
   # CROSS VALIDATION
   if(i==1){
     cat("TRAIN A-TEST B",sep="\n")
