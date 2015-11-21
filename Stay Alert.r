@@ -7,9 +7,10 @@ library(ROCR)
 # SETUP =========================================================
 READ_CSV <- TRUE
 
-CLEANUP_P <- FALSE
+CLEANUP_P <- TRUE
 BALANCE <- TRUE
 BAGGING <- TRUE
+TAYLOR <- FALSE
 
 LEADS <- 0
 JUMP <- 50
@@ -21,8 +22,7 @@ MESSAGE <- ""
 # ===============================================================
 
 # REDIRECIONANDO A SAIDA PARA LOG AUTOMATICO
-sink("log.txt", append = F)
-cat("\n\n\n")
+sink("log.txt", append = T)
 cat(format(Sys.time(), "%a, %d %b %Y - %X"))
 cat("\n\n")
 cat("----------------------- START OF EXPERIMENTS -----------------------")
@@ -57,9 +57,21 @@ if(CLEANUP_P){
   MESSAGE <- "P-VARS: Yes"
 }
 
-tmp_names <- colnames(fordTrain)
+# TAYLOR EXPANSIONS ================================================
+if(TAYLOR){
+  MESSAGE <- c(MESSAGE,"TAYLOR: Yes",sep=" / ")
+  for(i in 1:ncol(fordTrain)){
+    for(j in i:ncol(fordTrain)){
+      fordTrain <- cbind(fordTrain,fordTrain[,i]*fordTrain[,j])
+    }
+  }
+}else{
+  MESSAGE <- c(MESSAGE,"TAYLOR: No",sep=" / ")
+}
 
+# CRIANDO VETORES DE TIME SERIES ====================================
 if(LEADS > 0){
+  tmp_names <- colnames(fordTrain)
   for(i in 1:LEADS){
     MESSAGE <- paste(MESSAGE, paste("LEADS:",LEADS),sep=" / ")
     MESSAGE <- paste(MESSAGE, paste("JUMP:",JUMP),sep=" / ")
