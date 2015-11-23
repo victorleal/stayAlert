@@ -5,21 +5,21 @@ library(dplyr)
 library(ROCR)
 
 # SETUP =========================================================
-READ_CSV <- TRUE
+READ_CSV <- FALSE
 CV <- TRUE
 
-CLEANUP_P <- TRUE
-FEATURES <- NA#c("V11","V1","E10","E6","TrialID","ObsNum","IsAlert")
+CLEANUP_P <- FALSE
+FEATURES <- NA#c("V11","P7","V1","P6","E10","V10","E6","V6","E9","TrialID","ObsNum","IsAlert")
 BALANCE <- TRUE
 BAGGING <- TRUE
-TAYLOR <- FALSE
+TAYLOR <- F
 
-LEADS <- 50
-JUMP <- 1
-REDUCE_BY <- 50
+LEADS <- 5
+JUMP <- 5
+REDUCE_BY <- 1
 
-NORMALIZE <- FALSE
-NORM_BY <- "COL" # ROW | COL
+NORMALIZE <- TRUE
+NORM_BY <- "ROW" # ROW | COL
 MESSAGE <- ""
 # ===============================================================
 
@@ -41,6 +41,11 @@ if(READ_CSV){
   load("fordTrain.Rdata")
 }
 
+if(REDUCE_BY > 1){
+  idx <- sample(fordTrain,replace = T, as.integer(nrow(fordTrain)/REDUCE_BY))
+  fordTrain <- fordTrain[idx,]
+}
+
 Y <- factor(fordTrain$IsAlert)
 meta <- data.frame(IsAlert = fordTrain$IsAlert,TrialID = fordTrain$TrialID, ObsNum = fordTrain$ObsNum)
 
@@ -49,6 +54,7 @@ fordTrain$X <- NULL
 fordTrain$V7 <- NULL
 fordTrain$V9 <- NULL
 fordTrain$P8 <- NULL
+fordTrain$E7 <- NULL
 fordTrain$IsAlert <- NULL
 fordTrain$TrialID <- NULL
 fordTrain$ObsNum <- NULL
@@ -72,6 +78,7 @@ if(!is.na(FEATURES)){
 # TAYLOR EXPANSIONS ================================================
 if(TAYLOR){
   MESSAGE <- c(MESSAGE,"TAYLOR: Yes",sep=" / ")
+
   cols <- ncol(fordTrain)
   last <- cols
   for(i in 1:cols){
@@ -81,6 +88,7 @@ if(TAYLOR){
       colnames(fordTrain)[last] <- paste(colnames(fordTrain)[i],colnames(fordTrain)[j],sep="x")
     }
   }
+
 }else{
   MESSAGE <- c(MESSAGE,"TAYLOR: No",sep=" / ")
 }
@@ -89,15 +97,20 @@ if(TAYLOR){
 if(LEADS > 0){
   fordTrain <- cbind(fordTrain,meta)
   tmp_names <- colnames(fordTrain)
+  MESSAGE <- paste(MESSAGE, paste("LEADS:",LEADS),sep=" / ")
+  MESSAGE <- paste(MESSAGE, paste("JUMP:",JUMP),sep=" / ")
+  tmp_fordTrain <- fordTrain[seq(1,nrow(fordTrain),JUMP),]
 
   for(i in 1:LEADS){
-    MESSAGE <- paste(MESSAGE, paste("LEADS:",LEADS),sep=" / ")
-    MESSAGE <- paste(MESSAGE, paste("JUMP:",JUMP),sep=" / ")
     tmp_df <- as.data.frame(apply(fordTrain[,tmp_names],2,function(x)lead(x,JUMP*i)))
     colnames(tmp_df) <- paste(tmp_names,i,sep="_")
-    fordTrain <- cbind(fordTrain,tmp_df)
+    tmp_df <- tmp_df[seq(1,nrow(tmp_df),JUMP),]
+    tmp_fordTrain <- cbind(tmp_fordTrain,tmp_df)
+    cat(paste("Lead:",i,"\n"))
   }
-  rm(tmp_df)
+  fordTrain <- tmp_fordTrain
+  rm(tmp_df,tmp_fordTrain)
+
   a <- colnames(fordTrain)
   fordTrain <- fordTrain[which(fordTrain$TrialID == fordTrain$TrialID_1),]
   remove <- grep(pattern = "(Trial.+)|(Obs.+)|(IsAlert.+)",x = colnames(fordTrain),ignore.case = T)
@@ -109,7 +122,7 @@ if(LEADS > 0){
 save(fordTrain,file = "fordTrain_p.Rdata")
 
 # TREINAMENTO
-SPLIT <- as.integer(nrow(fordTrain)/2)
+SPLIT <- as.integer(nrow(fordTrain)*.5)
 
 for(i in 1:2){
   if(!CV && i==2) break
@@ -144,14 +157,14 @@ for(i in 1:2){
 
   if(BAGGING){
     MESSAGE <- paste(MESSAGE,"BOOTSTRAP: Yes",sep=" / ")
-    BOOTSTRAP <- sample(TRAIN_RANGE,size = SPLIT/REDUCE_BY, replace = T,prob = PROB[TRAIN_RANGE])
+    BOOTSTRAP <- sample(TRAIN_RANGE,size = SPLIT, replace = T,prob = PROB[TRAIN_RANGE])
   }else{
     MESSAGE <- paste(MESSAGE,"BOOTSTRAP: No",sep=" / ")
     BOOTSTRAP <- c(TRAIN_RANGE)
   }
 
   TRAIN <- fordTrain[BOOTSTRAP,]
-  gc(verbose = F)
+  gc()
 
   # EVITANDO SOBREPOSICAO TREINO-TESTE ====================================
 
@@ -180,7 +193,6 @@ for(i in 1:2){
       TRAIN <- as.data.frame(t(apply(TRAIN,1,function(x){(x-mean(x))/sd(x)})))
       TEST  <- as.data.frame(t(apply(TEST, 1,function(x){(x-mean(x))/sd(x)})))
 
-
     }else{
       # INVALIDO
       MESSAGE <- paste(MESSAGE,"NORMALIZE: No",sep=" / ")
@@ -201,11 +213,12 @@ for(i in 1:2){
 
   # TREINAMENTO DE CADA METODO ============================
 
-  source("LDA.r")
+
   source("RF.r")
+  source("LDA.r")
   source("LogR.r")
 }
 cat("------------------------ END OF EXPERIMENTS ------------------------",sep="\n")
 cat("\n")
-sink(NULL)
+#sink(NULL)
 gc()
