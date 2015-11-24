@@ -1,11 +1,11 @@
 cat("--------------------------- RANDOM FORESTS ---------------------------",sep="\n\n")
 
 library(randomForest)
-model_rf <- randomForest(IsAlert ~ ., data = TRAIN, ntree = 20)
+model_rf <- randomForest(IsAlert ~ ., data = TRAIN, ntree = 21)
 predicted_rf <- predict(model_rf, newdata = TEST)
 tbl <- table(pred = predicted_rf,actual = TEST$IsAlert)
 print(tbl)
-cat(paste("Accuracy on Random Forests:",sum(diag(tbl/length(TEST$IsAlert)))),sep="\n")
+cat(paste("Accuracy on Random Forests:",mean(tbl[1,1]/sum(tbl[,1]),tbl[2,2]/sum(tbl[,2])), sep="\n"))
 cat("\n")
 
 # PLOTA ROC E CALCULA AUC

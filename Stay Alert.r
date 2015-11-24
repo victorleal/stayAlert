@@ -5,17 +5,17 @@ library(dplyr)
 library(ROCR)
 
 # SETUP =========================================================
-READ_CSV <- FALSE
+READ_CSV <- TRUE
 CV <- TRUE
 
 CLEANUP_P <- FALSE
-FEATURES <- NA#c("V11","P7","V1","P6","E10","V10","E6","V6","E9","TrialID","ObsNum","IsAlert")
+FEATURES <- c("V11","P7","V1","P6","E10","V10","E6","V6","E9","TrialID","ObsNum","IsAlert")
 BALANCE <- TRUE
 BAGGING <- TRUE
 TAYLOR <- F
 
-LEADS <- 5
-JUMP <- 5
+LEADS <- 100
+JUMP <- 50
 REDUCE_BY <- 1
 
 NORMALIZE <- TRUE
@@ -112,7 +112,7 @@ if(LEADS > 0){
   rm(tmp_df,tmp_fordTrain)
 
   a <- colnames(fordTrain)
-  fordTrain <- fordTrain[which(fordTrain$TrialID == fordTrain$TrialID_1),]
+  fordTrain <- fordTrain[which(fordTrain$TrialID == fordTrain$TrialID_1 &fordTrain$IsAlert == fordTrain$IsAlert_1),]
   remove <- grep(pattern = "(Trial.+)|(Obs.+)|(IsAlert.+)",x = colnames(fordTrain),ignore.case = T)
   fordTrain <- fordTrain[,-remove]
   # Removendo NA's
@@ -215,8 +215,8 @@ for(i in 1:2){
 
 
   source("RF.r")
-  source("LDA.r")
-  source("LogR.r")
+  #source("LDA.r")
+  #source("LogR.r")
 }
 cat("------------------------ END OF EXPERIMENTS ------------------------",sep="\n")
 cat("\n")
