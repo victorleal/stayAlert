@@ -9,7 +9,7 @@ READ_CSV <- FALSE
 CV <- TRUE
 
 CLEANUP_P <- FALSE
-FEATURES <- NA#c("V11","P7","V1","P6","E10","V10","E6","V6","E9","TrialID","ObsNum","IsAlert")
+FEATURES <- c("V11","P7","V1","P6","E10","V10","E6","V6","E9","TrialID","ObsNum","IsAlert")
 BALANCE <- TRUE
 BAGGING <- TRUE
 TAYLOR <- F
