@@ -1,7 +1,11 @@
+# ======================================================================
+# Normalize.r
+# NORMALIZA A ENTRADA POR LINHA OU COLUNA
+# ======================================================================
+
 if(NORMALIZE){
 
-  # POR COLUNA ===============================================
-
+  # Normalizacao por coluna
   if(NORM_BY == "COL"){
     cat("Applying normalization by column\n")
     MEANS <- apply(TRAIN,2,mean)
@@ -9,8 +13,7 @@ if(NORMALIZE){
     TRAIN <- (TRAIN - MEANS)/SD
     TEST <- (TEST - MEANS)/SD
 
-    # POR LINHA (IPSATIVE) =====================================
-
+  # Normalizacao por linha
   }else if(NORM_BY == "ROW"){
     cat("Applying normalization by row\n")
     TRAIN <- as.data.frame(t(apply(TRAIN,1,function(x){(x-mean(x))/sd(x)})))

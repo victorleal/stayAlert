@@ -1,8 +1,14 @@
+# ======================================================================
+# Bootstrap.r
+# APLICAR BOOTSTRAP NO CONJUNTO DE TREINAMENTO
+# ======================================================================
+
+SPLIT <- as.integer(nrow(fordTrain)*.5)
 if(BAGGING){
   cat("Applying bootstrap...\n")
   BOOTSTRAP <- sample(TRAIN_RANGE,size = SPLIT, replace = T,prob = PROB[TRAIN_RANGE])
 }else{
-  BOOTSTRAP <- c(TRAIN_RANGE)
+  BOOTSTRAP <- TRAIN_RANGE
 }
 
 TRAIN <- fordTrain[BOOTSTRAP,]

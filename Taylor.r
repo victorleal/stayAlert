@@ -1,4 +1,8 @@
-# TAYLOR EXPANSIONS ================================================
+# ======================================================================
+# Taylor.r
+# CALCULA TAYLOR EXPANSIONS
+# ======================================================================
+
 if(TAYLOR){
   cat("Taylor expanding...\n")
 
@@ -11,5 +15,4 @@ if(TAYLOR){
       colnames(fordTrain)[last] <- paste(colnames(fordTrain)[i],colnames(fordTrain)[j],sep="x")
     }
   }
-
 }

@@ -1,26 +1,38 @@
+# ======================================================================
+# Main.r
+# PONTO DE ENTRADA DO PROJETO - RODAR TUDO A PARTIR DAQUI
+# ======================================================================
 gc(verbose = F)
 rm(list=ls())
 
 library(dplyr)
 library(ROCR)
 
-# SETUP =========================================================
+# Setup das variaveis de controle ================================================
+
+# Ler do csv ou do rdata?
 READ_CSV <- F
+# Cross-validation?
 CV <- TRUE
-
-CLEANUP_P <- T
-FEATURES <-  c("E9","E10","E7","E11","E8","V1","V10","V6","TrialID","ObsNum","IsAlert")
+# Remover variaveis P-*?
+CLEANUP_P <- F
+# Vetor com as features permitidas. NA para usar as features originais
+FEATURES <-  c("E9","E10","E7","E11","E8","V1","V10","V6","P7","P6","P5","TrialID","ObsNum","IsAlert")
+# Balancear?
 BALANCE <- T
+# Usar sampling com replacement?
 BAGGING <- T
+# Aplicar taylor expansions? (depois da selecao de atributos)
 TAYLOR <- F
-
-LEADS <- 00
-JUMP <- 50
+# Compor uma linha por varios registros? Quantos? (0 = sem composicao)
+LEADS <- 0
+# Tamanho dos saltos entre uma medicao e outra
+JUMP <- 10
+# Fazer amostragem no dataset?
 REDUCE_BY <- 1
-
+# Normalizar? Por linha ou coluna?
 NORMALIZE <- F
 NORM_BY <- "COL" # ROW | COL
-MESSAGE <- ""
 # ===============================================================
 
 # REDIRECIONANDO A SAIDA PARA LOG AUTOMATICO
@@ -34,10 +46,9 @@ source("LoadData.r")
 source("FeatureSelection.r")
 source("Taylor.r")
 source("TimeSeries.r")
-save(fordTrain,file = "fordTrain_p.Rdata")
 
-# TREINAMENTO
-SPLIT <- as.integer(nrow(fordTrain)*.5)
+# Salvando dados pre-processados
+save(fordTrain,file = "fordTrain_p.Rdata")
 
 for(i in 1:2){
 #i <- 1
@@ -54,13 +65,13 @@ for(i in 1:2){
   #remove <- which(is.na(TRAIN$E9))
   #TRAIN <- TRAIN[-remove,]
   TRAIN$IsAlert <- as.factor(TRAIN$IsAlert)
-  #remove <- which(is.na(TEST$E9))
+  #remove <- which(is.na(TEST$E9)) # descomentar caso faca leads
   #TEST <- TEST[-remove,]
   TEST$IsAlert <- factor(TEST$IsAlert)
 
   source("RF.r")
   source("LDA.r")
-  #source("LogR.r")
+  source("LogR.r")
 }
 cat("------------------------ END OF EXPERIMENTS ------------------------",sep="\n")
 cat("\n")
